@@ -1,0 +1,57 @@
+---
+# tasks file for nginx
+- name: yum update cache
+  yum:
+    update_cache: yes
+
+- name: Install nginx
+  dnf:
+    name: nginx
+    state: latest
+
+- name: Copy file from local host to remote host
+  copy:
+    src: /home/zeinab/Downloads/ansible_course/day2/nginx/files/nginx.conf
+    dest: /etc/nginx
+
+- name: Create SSL directory if it doesn't exist
+  file:
+    path: /etc/ssl/private
+    state: directory
+    mode: '0700'
+  check_mode: no
+
+- name: Generate private key
+  openssl_privatekey:
+    path: /etc/ssl/private/nginx.key
+    size: 2048
+
+# certificate sign request
+- name: Generate CSR
+  openssl_csr:
+    path: /etc/ssl/certs/nginx.csr
+    privatekey_path: /etc/ssl/private/nginx.key
+
+- name: Generate self-signed certificate
+  openssl_certificate:
+    path: /etc/ssl/certs/nginx.crt
+    privatekey_path: /etc/ssl/private/nginx.key
+    csr_path: /etc/ssl/certs/nginx.csr
+    provider: selfsigned
+
+- name: daemon-reload to pick up config changes
+  systemd:
+    daemon_reload: yes    
+
+- name: Start nginx
+  systemd:
+    name: nginx
+    state: started    
+
+
+
+
+ 
+
+
+

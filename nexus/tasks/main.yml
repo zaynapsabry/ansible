@@ -1,0 +1,71 @@
+---
+# tasks file for nexus
+- name: apt update cache
+  apt:
+    update_cache: yes
+
+- name: Install wget
+  apt:
+    name: wget
+    state: present
+
+- name: Install OpenJDK 8
+  apt:
+    name: openjdk-8-jre
+    state: present
+
+- name: Download Nexus Repository Manager archive
+  get_url:
+    url: "https://download.sonatype.com/nexus/3/latest-unix.tar.gz"
+    dest: "/tmp/nexus.tar.gz"
+
+- name: Extract Nexus Repository Manager archive
+  unarchive:
+    src: "/tmp/nexus.tar.gz"
+    dest: "/opt/"
+    remote_src: yes  
+
+- name: Create Nexus user
+  user:
+    name: nexus
+    shell: /bin/bash
+
+- name: Change Nexus directory ownership
+  file:
+    path: "{{item}}"
+    owner: nexus
+    group: nexus
+    recurse: yes
+  with_items:
+    - "/opt/nexus-3.67.1-01" 
+    - "/opt/sonatype-work"  
+
+- name: Copy file from local host to remote host
+  copy:
+    src: /home/zeinab/Downloads/ansible_course/day2/nexus/files/nexus.service
+    dest: /etc/systemd/system
+    owner: nexus
+    group: nexus
+
+- name: Config file
+  blockinfile:
+    path: "/opt/nexus-3.67.1-01/bin/nexus.rc"
+    block: |
+      run_as_user="nexus"   
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+      
+- name: Start nexus
+  systemd:
+    name: nexus
+    state: started        
+
+
+
+ 
+
+
+
+

@@ -1,0 +1,8 @@
+---
+- hosts: all
+  name: installing jenkins and nexus playbook
+  remote_user: ec2-user
+  become: yes
+  roles:
+  - name: nginx
+  - name: jenkins
